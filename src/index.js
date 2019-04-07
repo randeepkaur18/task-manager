@@ -4,7 +4,7 @@ const User = require('./models/users.js');
 const Task = require('./models/tasks.js');
 
 const app = express();
-const port = process.env.PORT || 4000;
+const port = process.env.PORT || 3001;
 
 // It will automatically parse JSON request into Object
 app.use(express.json());
@@ -19,6 +19,7 @@ app.post('/users', (req, res) => {
 });
 
 app.post('/tasks', (req, res) => {
+    console.log(req.body);
     const task = new Task(req.body);
     task.save().then(() => {
         res.send(task);
