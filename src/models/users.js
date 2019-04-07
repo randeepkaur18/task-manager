@@ -1,4 +1,4 @@
-const mongoose = require('../db/mongoose.js');
+const mongoose = require('mongoose');
 const validator = require('validator');
 
 const User = mongoose.model('User', {
@@ -37,3 +37,5 @@ const User = mongoose.model('User', {
         }
     }
 });
+
+module.exports = User;
