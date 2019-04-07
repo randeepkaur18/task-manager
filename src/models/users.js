@@ -20,8 +20,9 @@ const User = mongoose.model('User', {
     password: {
         type: String,
         required: true,
+        minlength: 6,
         validate(value) {
-            if(value.toLowercase().includes('password')) {
+            if(value.toLowerCase().includes('password')) {
                 throw new Error('Password should not contain password.');
             }
         }
