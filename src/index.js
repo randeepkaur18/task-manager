@@ -3,7 +3,8 @@ require('./db/mongoose.js');
 const userRouter = require('./routers/user.js');
 const taskRouter = require('./routers/task.js');
 
-/* Instantiating express by executing express() function.
+/* 
+ * Instantiating express by executing express() function.
  * Creates the express app.
  */
 const app = express();
