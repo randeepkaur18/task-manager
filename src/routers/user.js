@@ -20,6 +20,15 @@ router.post('/users', async (req, res) => {
     */
 });
 
+router.post('/users/login', (req, res) => {
+    try {
+        const user = User.findByCredentials(req.body.email, req.body.password);
+        res.send(user);
+    } catch(error) {
+        res.status(400).send(error);
+    }
+})
+
 router.get('/users', async (req, res) => {
     try {
         const users = await User.find({});
@@ -51,9 +60,6 @@ router.patch('/users/:id', async (req, res) => {
     }
 
     try {
-        // const user = await User.findByIdAndUpdate(req.params.id, req.body,
-        //     { new: true, runValidators: true });
-
         const user = await User.findById(req.params.id);
         if( !user ) {
             return res.status(404).send(); 
