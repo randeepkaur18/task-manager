@@ -72,6 +72,18 @@ app.patch('/users/:id', async (req, res) => {
     }
 });
 
+app.delete('/users/:id', async (req, res) => {
+    try {
+        const user = User.findByIdAndDelete(req.params.id);
+        if( !user ) {
+            return res.status(404).send();
+        }
+        res.send(user);
+    } catch(error) {
+        res.status(500).send(error);
+    }
+})
+
 
 
 // ==================== End points to manage tasks =====================
@@ -112,14 +124,14 @@ app.patch('/tasks/:id', async (req, res) => {
     const isValidRequest = updates.every( update => allowedUpdates.includes(update));
 
     if( !isValidRequest ) {
-        res.status(404).send({ 'error': 'Invalid update request.' });
+        return res.status(404).send({ 'error': 'Invalid update request.' });
     }
 
     try {
         const task = await Task.findByIdAndUpdate(req.params.id, req.body,
             { new: true, runValidators: true });
         if( !task ) {
-            res.status(404).send();
+            return res.status(404).send();
         }
         res.send(task);
     } catch(error) {
@@ -127,7 +139,17 @@ app.patch('/tasks/:id', async (req, res) => {
     }
 })
 
-
+app.delete('/tasks/:id', async (req, res) => {
+    try {
+        const task = Task.findByIdAndDelete(req.params.id);
+        if(!task) {
+            return res.status(404).send();
+        }
+        res.send(task);
+    } catch(error) {
+        res.status(500).send(error);
+    }
+})
 
 app.listen(port, () => {
     console.log('Service is running on port: ', port);
