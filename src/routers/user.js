@@ -5,8 +5,13 @@ const router = new express.Router();
 router.post('/users', async (req, res) => {
     const user = new User(req.body);
     try {
+        console.log('inside handler')
         await user.save();
-        res.status(201).send(user);
+        const token = await user.generateAuthToken();
+        console.log('after token generated');
+        console.log(user);
+        console.log(token);
+        res.status(201).send({ user, token });
     } catch (error) {
         res.status(400).send(error);
     }
@@ -20,7 +25,7 @@ router.post('/users', async (req, res) => {
     */
 });
 
-router.post('/users/login', (req, res) => {
+router.post('/users/login', async (req, res) => {
     try {
         const user = await User.findByCredentials(req.body.email, req.body.password);
         const token = await user.generateAuthToken();
@@ -29,6 +34,7 @@ router.post('/users/login', (req, res) => {
         res.status(400).send(error);
     }
 })
+
 
 router.get('/users', async (req, res) => {
     try {

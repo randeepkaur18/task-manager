@@ -4,7 +4,7 @@ const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 
 const userSchema = mongoose.Schema({
-    name : {
+    name: {
         type: String,
         required: true,
         trim: true
@@ -15,7 +15,7 @@ const userSchema = mongoose.Schema({
         required: true,
         trim: true,
         validate(value) {
-            if( !validator.isEmail(value) ) {
+            if (!validator.isEmail(value)) {
                 throw new Error('Password is invalid');
             }
         }
@@ -25,7 +25,7 @@ const userSchema = mongoose.Schema({
         required: true,
         minlength: 6,
         validate(value) {
-            if(value.toLowerCase().includes('password')) {
+            if (value.toLowerCase().includes('password')) {
                 throw new Error('Password should not contain password.');
             }
         }
@@ -34,40 +34,54 @@ const userSchema = mongoose.Schema({
         type: Number,
         default: 0,
         validate(value) {
-            if(value < 0) {
-                throw new error('Age must be positive.');
+            if (value < 0) {
+                throw new Error('Age must be positive.');
             }
         }
-    }
+    },
+    tokens: [{
+        token: {
+            type: String,
+            required: true
+        }
+    }]
 })
 
-const User = mongoose.model('User', userSchema);
-
-userSchema.pre('save', async function(next) {
+userSchema.pre('save', async function (next) {
     const user = this;
-    if(user.isModified('password')) {
+    if (user.isModified('password')) {
         user.password = await bcrypt.hash(user.password, 8);
     }
 
     next();
 })
 
+userSchema.methods.generateAuthToken = async function () {
+    console.log('inside generate token')
+    
+    const user = this;
+    const token = jwt.sign({ _id: user._id.toString() }, 'taskmanagersecretkey');
+    user.tokens = user.tokens.concat({ token });
+    await user.save();
+    console.log('after saving token');
+    console.log(user);
+    console.log(token);
+    return token;
+}
+
+
 userSchema.statics.findByCredentials = async (email, password) => {
-    const user = await User.findOne( { email } );
-    if(!user) {
+    const user = await User.findOne({ email });
+    if (!user) {
         throw new Error('User doesnot exists');
     }
     const isMatch = await bcrypt.compare(password, user.password);
-    if(!isMatch) {
+    if (!isMatch) {
         throw new Error('Unable to login. Invalid credentials');
     }
     return user;
 }
 
-userSchema.methods.generateAuthToken = async function() {
-    const user = this;
-    const token = jwt.sign({ _id: user._id.toString() }, 'taskmanagersecretkey');
-    return token;
-}
+const User = mongoose.model('User', userSchema);
 
 module.exports = User;
