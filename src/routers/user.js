@@ -5,12 +5,8 @@ const router = new express.Router();
 router.post('/users', async (req, res) => {
     const user = new User(req.body);
     try {
-        console.log('inside handler')
         await user.save();
         const token = await user.generateAuthToken();
-        console.log('after token generated');
-        console.log(user);
-        console.log(token);
         res.status(201).send({ user, token });
     } catch (error) {
         res.status(400).send(error);
@@ -71,7 +67,8 @@ router.patch('/users/:id', async (req, res) => {
         if( !user ) {
             return res.status(404).send(); 
         }
-        updates.forEach( update => user['update'] = req.body['update'] );
+        updates.forEach( update => user[update] = req.body[update] );
+        console.log(user);    
         await user.save();
         res.send(user);
     } catch(error) {
