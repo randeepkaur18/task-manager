@@ -69,6 +69,33 @@ router.get('/users/me', auth, async (req, res) => {
     res.send(req.user);
 });
 
+router.put('/users/me', auth, async (req, res) => {
+    const updates = Object.keys(req.body);
+    const allowedUpdates = [ 'name', 'password', 'email', 'age' ];
+    const isValidRequest = updates.every( update => allowedUpdates.includes(update) );
+
+    if( !isValidRequest ) {
+        return res.status(404).send({ 'error': 'Invalid update request.' });
+    }
+
+    try {
+        updates.forEach( update => req.user[update] = req.body[update] );  
+        await req.user.save();
+        res.send(req.user);
+    } catch(error) {
+        res.status(400).send(error);
+    }
+});
+
+router.delete('/users/me', auth, async (req, res) => {
+    try {
+        req.user.remove();
+        res.send(req.user);
+    } catch(error) {
+        res.status(500).send(error);
+    }
+});
+
 const upload = multer({
     limits: {
         fileSize: 1000000
@@ -98,31 +125,14 @@ router.get('/users/:id/profileImage', async (req, res) => {
     }
 })
 
-router.put('/users/me', auth, async (req, res) => {
-    const updates = Object.keys(req.body);
-    const allowedUpdates = [ 'name', 'password', 'email', 'age' ];
-    const isValidRequest = updates.every( update => allowedUpdates.includes(update) );
-
-    if( !isValidRequest ) {
-        return res.status(404).send({ 'error': 'Invalid update request.' });
-    }
-
+router.delete('/users/me/profileImage', auth, async (req, res) => {
     try {
-        updates.forEach( update => req.user[update] = req.body[update] );  
+        req.user.profileImage = undefined;
         await req.user.save();
-        res.send(req.user);
-    } catch(error) {
-        res.status(400).send(error);
-    }
-});
-
-router.delete('/users/me', auth, async (req, res) => {
-    try {
-        req.user.remove();
-        res.send(req.user);
+        res.status(200).send();
     } catch(error) {
         res.status(500).send(error);
     }
-});
+})
 
 module.exports = router;
