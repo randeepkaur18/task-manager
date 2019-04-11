@@ -1,4 +1,5 @@
 const express = require('express');
+const multer = require('multer');
 const User = require('../models/users.js');
 const auth = require('../middleware/auth');
 const router = new express.Router();
@@ -67,6 +68,35 @@ router.get('/users', async (req, res) => {
 router.get('/users/me', auth, async (req, res) => {
     res.send(req.user);
 });
+
+const upload = multer({
+    limits: {
+        fileSize: 1000000
+    }
+})
+
+router.post('/users/me/profileImage',auth, upload.single('file'), async (req, res) => {
+    try {
+        req.user.profileImage = req.file.buffer;
+        await req.user.save();
+        res.send();        
+    } catch(error) {
+        res.status(500).send(error);
+    }
+});
+
+router.get('/users/:id/profileImage', async (req, res) => {
+    try {
+        const user = await User.findById(req.params.id);
+        if(!user || !user.profileImage) {
+            throw new Error('Not Found')
+        }
+        res.set('Content-Type', 'img/jpg');
+        res.status(200).send(user.profileImage);
+    } catch(error) {
+        res.status(500).send(error);
+    }
+})
 
 router.put('/users/me', auth, async (req, res) => {
     const updates = Object.keys(req.body);
