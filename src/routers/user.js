@@ -32,9 +32,10 @@ router.post('/users/login', async (req, res) => {
     }
 })
 
+//  Logout router - deletes the current token
 router.post('/users/logout', auth, async (req, res) => {
     try {
-        req.user.tokens = req.user.tokens.filter( token => req.token !== token );
+        req.user.tokens = req.user.tokens.filter( token => token.token !== req.token );
         await req.user.save();
         res.status(200).send();
     } catch (error) {
@@ -42,6 +43,17 @@ router.post('/users/logout', auth, async (req, res) => {
     }
 })
 
+// Logout all request handler - logout the user from all sessions
+// Deletes all tokens for a user
+router.post('/users/logoutAll', auth, async (req, res) => {
+    try {
+        req.user.tokens = [];
+        await req.user.save();
+        res.status(200).send();
+    } catch(error) {
+        res.status(500).send(error);
+    }
+})
 
 router.get('/users', async (req, res) => {
     try {
