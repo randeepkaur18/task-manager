@@ -45,11 +45,18 @@ const userSchema = mongoose.Schema({
             required: true
         }
     }]
+}, {
+    timestamps: true
+})
+
+userSchema.virtual('tasks', {
+    ref: 'Task',
+    localField: '_id',
+    foreignField: 'owner'
 })
 
 userSchema.pre('save', async function (next) {
     const user = this;
-    console.log(user.isModified('password'));
     if (user.isModified('password')) {
         user.password = await bcrypt.hash(user.password, 8);
     }
