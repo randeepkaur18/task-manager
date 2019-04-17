@@ -57,14 +57,14 @@ router.post('/users/logoutAll', auth, async (req, res) => {
     }
 })
 
-// router.get('/users', async (req, res) => {
-//     try {
-//         const users = await User.find({});
-//         res.send(users);
-//     } catch (error) {
-//         res.status(500).send(error);
-//     }
-// });
+router.get('/users', async (req, res) => {
+    try {
+        const users = await User.find({});
+        res.send(users);
+    } catch (error) {
+        res.status(500).send(error);
+    }
+});
 
 router.get('/users/me', auth, async (req, res) => {
     res.send(req.user);
@@ -99,7 +99,13 @@ router.delete('/users/me', auth, async (req, res) => {
 
 const upload = multer({
     limits: {
-        fileSize: 1000000
+        fileSize: 1000000,  // 1000000 = 1MB(size in bytes)
+    },
+    fileFilter(req, file, cb) {
+        if(!file.originalname.match(/\.(jpg|jpeg|png)$/)) {
+            return cb(new Error('Please upload jpg, jpeg or png files.'));
+        }
+        cb(undefined, true);
     }
 })
 
@@ -108,6 +114,18 @@ router.post('/users/me/profileImage',auth, upload.single('file'), async (req, re
         req.user.profileImage = req.file.buffer;
         await req.user.save();
         res.send();        
+    } catch(error) {
+        res.status(500).send(error);
+    }
+}, (error, req, res, next) => {
+    res.status(400).send({ error: error.message })
+});
+
+router.delete('/users/me/profileImage', auth, async (req, res) => {
+    try {
+        req.user.profileImage = undefined;
+        await req.user.save();
+        res.status(200).send();
     } catch(error) {
         res.status(500).send(error);
     }
@@ -124,16 +142,6 @@ router.get('/users/:id/profileImage', async (req, res) => {
     } catch(error) {
         res.status(500).send(error);
     }
-})
-
-router.delete('/users/me/profileImage', auth, async (req, res) => {
-    try {
-        req.user.profileImage = undefined;
-        await req.user.save();
-        res.status(200).send();
-    } catch(error) {
-        res.status(500).send(error);
-    }
-})
+});
 
 module.exports = router;
