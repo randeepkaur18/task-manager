@@ -59,6 +59,8 @@ userSchema.virtual('tasks', {
     foreignField: 'owner'
 })
 
+// This function executes before every 'save()'
+// Hash the plain text password before saving
 userSchema.pre('save', async function (next) {
     const user = this;
     if (user.isModified('password')) {
@@ -68,12 +70,15 @@ userSchema.pre('save', async function (next) {
     next();
 })
 
+// This function executes before every 'remove()'
+// Deletes all the tasks careated by the user before deleting user
 userSchema.pre('remove', async function (next) {
     const user = this;
     await Task.deleteMany({ owner: user._id });
     next();
 })
 
+// Get public profile of a user
 userSchema.methods.toJSON = function() {
     const user = this;
     const userObject = user.toObject();
@@ -83,7 +88,7 @@ userSchema.methods.toJSON = function() {
     return userObject;
 }
 
-
+// Generates the jwt token
 userSchema.methods.generateAuthToken = async function () {
     const user = this;
     const token = jwt.sign({ _id: user._id.toString() }, 'taskmanagersecretkey');
