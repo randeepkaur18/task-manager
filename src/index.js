@@ -10,7 +10,7 @@ const taskRouter = require('./routers/task.js');
 const app = express();
 
 // Setting the port
-const port = process.env.PORT || 3001;
+const port = process.env.PORT;
 
 // It will automatically parse JSON request into Object
 app.use(express.json());
