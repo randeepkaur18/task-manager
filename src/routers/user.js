@@ -55,15 +55,6 @@ router.post('/users/logoutAll', auth, async (req, res) => {
     } catch(error) {
         res.status(500).send(error);
     }
-})
-
-router.get('/users', async (req, res) => {
-    try {
-        const users = await User.find({});
-        res.send(users);
-    } catch (error) {
-        res.status(500).send(error);
-    }
 });
 
 router.get('/users/me', auth, async (req, res) => {
@@ -76,7 +67,7 @@ router.put('/users/me', auth, async (req, res) => {
     const isValidRequest = updates.every( update => allowedUpdates.includes(update) );
 
     if( !isValidRequest ) {
-        return res.status(404).send({ 'error': 'Invalid update request.' });
+        return res.status(400).send({ 'error': 'Invalid update request.' });
     }
 
     try {
