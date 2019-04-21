@@ -1,24 +1,9 @@
 const request = require('supertest');
-const mongoose = require('mongoose');
-const jwt = require('jsonwebtoken');
+const { userOneId, userOne, setupDatabase } = require('./fixtures/db');
 const app = require('../src/app');
 const User = require('../src/models/users');
 
-const userOneId = new mongoose.Types.ObjectId;
-const userOne = {
-    _id: userOneId,
-    name: 'Max',
-    email: 'max@test.com',
-    password: 'max@12345',
-    tokens: [{
-        token: jwt.sign({ _id: userOneId }, process.env.JWT_SECRET)
-    }]
-}
-
-beforeEach(async () => {
-    await User.deleteMany();
-    await new User(userOne).save();
-});
+beforeEach(setupDatabase);
 
 test('Should save a new user', async () => {
     const response = await request(app)
@@ -47,16 +32,15 @@ test('Should save a new user', async () => {
     expect(user.password).not.toBe('jane@12345');
 });
 
-test('Should not signup a user with existing email', async () => {
-    await request(app)
-        .post('/users')
-        .send({
-            name: 'Max',
-            email: 'max@test.com',
-            password: 'max@12345'
-        })
-        .expect(400);
-});
+// test('Should not signup a user with existing email', async () => {
+//     await request(app)
+//         .post('/users')
+//         .send({
+//             email: 'max@test.com',
+//             password: 'max@12345'
+//         })
+//         .expect(400);
+// });
 
 test('Should login existing user', async () => {
     const response = await request(app)
@@ -86,14 +70,14 @@ test('Should get user profile', async () => {
     await request(app)
         .get('/users/me')
         .set('Authorization', `Bearer ${userOne.tokens[0].token}`)
-        .send({})
+        .send()
         .expect(200);
 });
 
 test('Should not get user profile for unauthenticated user', async () => {
     const response = await request(app)
         .get('/users/me')
-        .send({})
+        .send()
         .expect(401);
 
     expect(response.body).toMatchObject({ 'error': 'Please authenticate' });
